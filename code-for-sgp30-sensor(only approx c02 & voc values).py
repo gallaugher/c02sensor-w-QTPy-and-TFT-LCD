@@ -150,6 +150,10 @@ def update_labels(co2, voc, is_high):
         voc_status.color = COLOR_GREEN if not voc_is_high else COLOR_RED
         voc_label.text = f"{voc}"
 
+    # Turn on LED if either CO2 or VOC is high
+    led.value = False if (not is_high and not voc_is_high) else True
+    # led.value = is_high # LED will turn on when CO2 is high
+
     # Store new values
     prev_values.update({
         "co2": co2,
@@ -190,6 +194,11 @@ def update():
         print(f"Error reading sensor: {e}")
 
 # 5. INITIALIZATION CODE
+# Setup LED
+led = digitalio.DigitalInOut(board.A0)
+led.direction = digitalio.Direction.OUTPUT
+led.value = False
+
 # Setup CO2 Sensor
 i2c = board.STEMMA_I2C()
 sensor = adafruit_sgp30.Adafruit_SGP30(i2c)
