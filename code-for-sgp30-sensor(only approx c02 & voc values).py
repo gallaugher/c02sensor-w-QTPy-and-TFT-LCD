@@ -83,14 +83,21 @@ def save_baseline(sensor):
     # Only save if we're past initial calibration
     current_time = time.monotonic()
     if (current_time - start_time) > CALIBRATION_TIME:
-        baseline = {
-            'eCO2': sensor.baseline_eCO2,
-            'TVOC': sensor.baseline_TVOC
-        }
-        with open("sgp30_baseline.json", "w") as f:
-            json.dump(baseline, f)
-        print("Saved new baseline values")
-        last_baseline_save = current_time
+        if (current_time - start_time) > CALIBRATION_TIME:
+            try:
+                baseline = {
+                    'eCO2': sensor.baseline_eCO2,
+                    'TVOC': sensor.baseline_TVOC
+                }
+                with open("sgp30_baseline.json", "w") as f:
+                    json.dump(baseline, f)
+                print("Saved new baseline values")
+                last_baseline_save = current_time
+            except OSError as e:
+                if e.args[0] == 30:  # Read-only filesystem
+                    print("Could not save baseline - filesystem is read-only")
+                else:
+                    print(f"Error saving baseline: {e}")
 
 def check_warmup_status():
     """Check if sensor is warmed up"""
@@ -138,7 +145,8 @@ def update_labels(co2, voc, is_high):
 
         # Update icon
         icon_label.text = "" if not is_high else ""
-        icon_label.color = 0x00FF00 if not is_high else 0xFF0000
+        icon_label.color = 0xFF0000 if is_high else 0x00FF00
+        # icon_label.color = 0x00FF00 if not is_high else 0xFF0000
 
     # Update text only if values have changed
     if prev_values["co2"] != co2:
