@@ -7,10 +7,34 @@
 import board, time, digitalio, json
 import adafruit_sgp30
 import displayio, terminalio
+import storage, supervisor
 from adafruit_st7735r import ST7735R
 from displayio import FourWire
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
+
+# Setup LED
+led = digitalio.DigitalInOut(board.A0)
+led.direction = digitalio.Direction.OUTPUT
+led.value = False
+
+# The sleep below is important to give the USB port
+# has time to "register with the Mac" before checking the connection.
+# If you forget this, then you may not properly regiseter as connected.
+# to a computer.
+time.sleep(3)
+
+# To allow storage when not connected to a computer
+if supervisor.runtime.usb_connected:
+    print("Running from computer, so saving files for calibration won't happen.\n"
+          "Be sure to plug into a USB power source (not a computer) and leave\n"
+          "alone for 12 hours in a well-ventilated area to properly calibrate &\n"
+          "save the calibration file.")
+else:
+    try:
+        storage.remount("/", False)  # Make filesystem writable when running from USB
+    except Exception as e:
+        print(f"Error with storage or file writing: {e}")
 
 # Display Constants
 WIDTH = 128
@@ -19,7 +43,7 @@ HORIZONTAL_START = 8
 VERTICAL_MOVE = 8
 CO2_VAL_VERTICAL = 37
 ICON_VERTICAL = 89
-VOC_HORIZONTAL = 67
+VOC_HORIZONTAL = 52
 VOC_STATUS_VERTICAL = 76
 VOC_VERTICAL = 100
 
@@ -62,6 +86,10 @@ def initialize_baseline_tracking():
 
 def load_baseline(sensor):
     """Load saved baseline values if available"""
+    if supervisor.runtime.usb_connected:
+        print("Connected to computer - can't load baseline")
+        return False
+
     try:
         with open("sgp30_baseline.json", "r") as f:
             baseline = json.load(f)
@@ -79,6 +107,10 @@ def load_baseline(sensor):
 def save_baseline(sensor):
     """Save current baseline values"""
     global last_baseline_save
+
+    if supervisor.runtime.usb_connected:
+        print("Connected to computer - can't save baseline")
+        return
 
     # Only save if we're past initial calibration
     current_time = time.monotonic()
@@ -201,11 +233,7 @@ def update():
     except Exception as e:
         print(f"Error reading sensor: {e}")
 
-# 5. INITIALIZATION CODE
-# Setup LED
-led = digitalio.DigitalInOut(board.A0)
-led.direction = digitalio.Direction.OUTPUT
-led.value = False
+# INITIALIZATION CODE
 
 # Setup CO2 Sensor
 i2c = board.STEMMA_I2C()
