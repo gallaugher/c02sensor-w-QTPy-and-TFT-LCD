@@ -9,7 +9,7 @@ import adafruit_sgp30
 import displayio, terminalio
 import storage, supervisor
 from adafruit_st7735r import ST7735R
-from displayio import FourWire
+from fourwire import FourWire # upgraded for CircuitPython 10 and up
 from adafruit_display_text import label
 from adafruit_bitmap_font import bitmap_font
 
