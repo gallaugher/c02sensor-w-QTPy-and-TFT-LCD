@@ -9,6 +9,6 @@ Here is a look at the display setup I've created for the 128x128 TFT.
 - The large value is co2 ppm/1000.
 - The green smile face is when this value is below 1000
 - It turns into a red frown face when this value is 1000 or above
-- The voc value is in ppb (parts per billion). The VOC label above it is green when value is below 250, red when 250 or above.
+- The voc value is in ppb (parts per billion). The VOC label above it is green when value is below 660, red when 660 or above.
 
 ![sgp30-and-display](https://github.com/user-attachments/assets/b2a496ca-b645-41b2-90a1-3b481ed8dbde)
